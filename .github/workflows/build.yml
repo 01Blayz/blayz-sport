@@ -1,30 +1,39 @@
 name: APK Derle
+
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
+
 jobs:
   build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-      - name: Android klasorunu olustur
-        run: |
-          cp lib/main.dart /tmp/main.dart
-          cp pubspec.yaml /tmp/pubspec.yaml
-          flutter create . --project-name blayz_sport --platforms=android
-          cp /tmp/main.dart lib/main.dart
-          cp /tmp/pubspec.yaml pubspec.yaml
-      - run: flutter pub get
-      - run: flutter build apk --release
-      - uses: actions/upload-artifact@v4
-        with:
-          name: blayz-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+
+        - name: Set up Java
+          uses: actions/setup-java@v4
+          with:
+            distribution: 'zulu'
+            java-version: '17'
+
+        - name: Set up Flutter
+          uses: subosito/flutter-action@v2
+          with:
+            flutter-version: '3.19.x'
+            channel: 'stable'
+
+        - name: Klasor Yapisini Duzenle
+          run: |
+            mkdir -p lib
+            if [ -f main.dart ]; then mv main.dart lib/; fi
+
+        - name: Flutter Pub Get
+          run: flutter pub get
+
+        - name: APK Derle
+          run: flutter build apk --release
+
+        - name: Artifact Yukle
+          uses: actions/upload-artifact@v4
+          with:
+            name: blayz-apk
+            path: build/app/outputs/flutter-apk/app-release.apk
